@@ -61,7 +61,7 @@ namespace sunrise_launcher
             foreach (var profile in TequilaRoot.Profiles)
             {
                 var config = new LaunchOption();
-                config.Title = profile.Value;
+                config.Name = profile.Value;
                 config.LaunchPath = profile.Exec;
                 config.Args = profile.Params;
                 metadata.LaunchOptions.Add(config);

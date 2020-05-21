@@ -120,7 +120,7 @@ function configOpen(manifestURL) {
 function populateLaunchOptions(metadata) {
     var options = [];
     Net.listForEach(metadata.launchOptions, function (option) {
-        options.push(option.title);
+        options.push(option.name);
     });
     combobox_launch.model = options;
 }

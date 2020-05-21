@@ -33,8 +33,8 @@ namespace sunrise_launcher
 
     public class LaunchOption
     {
-        [JsonPropertyName("title")]
-        public string Title { get; set; }
+        [JsonPropertyName("name")]
+        public string Name { get; set; }
         [JsonPropertyName("path")]
         public string LaunchPath { get; set; }
         [JsonPropertyName("env")]

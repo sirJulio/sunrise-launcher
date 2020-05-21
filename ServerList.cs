@@ -123,12 +123,13 @@ namespace sunrise_launcher
                 ShowMessage("Server add failed.");
                 return;
             }
+            server.Metadata.Version = "";
 
             Servers.Add(server);
             Selected = server.ManifestURL;
             this.ActivateSignal("update");
 
-            await UpdateAsync(server, false);
+            await UpdateAsync(server, true);
             this.ActivateSignal("update");
             ShowMessage(server.Error);
         }
@@ -250,9 +251,9 @@ namespace sunrise_launcher
                 }
 
                 //if update occurs which removes the selected launch option, default to first option available
-                if (metadata.LaunchOptions.All(x => x.Title != server.Launch))
+                if (metadata.LaunchOptions.All(x => x.Name != server.Launch))
                 {
-                    server.Launch = metadata.LaunchOptions[0].Title;
+                    server.Launch = metadata.LaunchOptions[0].Name;
                 }
             }
             catch (Exception ex)
@@ -427,7 +428,7 @@ namespace sunrise_launcher
 
             try
             {
-                var launch = server.Metadata.LaunchOptions.FirstOrDefault(x => x.Title == server.Launch);
+                var launch = server.Metadata.LaunchOptions.FirstOrDefault(x => x.Name == server.Launch);
                 if (launch == null)
                 {
                     Console.WriteLine("ERROR: launch option not found: {0}", server.Launch);
