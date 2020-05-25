@@ -99,21 +99,15 @@ namespace SunriseLauncher.Models
                 return false;
             }
 
-            if (Path.Contains("main.js"))
+            if (Path.Contains("servers.json"))
             {
-                Console.WriteLine("illegal sequence in manifest file path: 'main.js' in {0}", Path);
+                Console.WriteLine("illegal sequence in manifest file path: 'servers.json' in {0}", Path);
                 return false;
             }
 
-            if (Path.Contains("main.qml"))
+            if (Path.Contains("Sunrise.exe"))
             {
-                Console.WriteLine("illegal sequence in manifest file path: 'main.qml' in {0}", Path);
-                return false;
-            }
-
-            if (Path.Contains("sunrise-launcher"))
-            {
-                Console.WriteLine("illegal sequence in manifest file path: 'sunrise-launcher' in {0}", Path);
+                Console.WriteLine("illegal sequence in manifest file path: 'Sunrise.exe' in {0}", Path);
                 return false;
             }
 
