@@ -1,19 +1,18 @@
-﻿using System.Threading.Tasks;
+﻿using SunriseLauncher.Models;
+using System;
+using System.Collections.Generic;
+using System.Text;
+using System.Threading.Tasks;
 
-namespace sunrise_launcher
+namespace SunriseLauncher.Services
 {
-    public interface IManifestFactory
-    {
-        public IManifest Get(string manifesturl);
-    }
-
-    public class ManifestFactory : IManifestFactory
+    public class MainfestFactory
     {
         const string sunrise_api = "sunrise-api";
         const string sunrise_json = "sunrise-json";
         const string tequila_xml = "tequila-xml";
 
-        public IManifest Get(string manifesturl)
+        public static IManifest Get(string manifesturl)
         {
             var schema = getSchema(manifesturl);
             switch (schema)
@@ -28,7 +27,7 @@ namespace sunrise_launcher
             return null;
         }
 
-        private string getSchema(string manifesturl)
+        private static string getSchema(string manifesturl)
         {
             if (manifesturl.ToLower().EndsWith(".xml"))
                 return tequila_xml;
@@ -37,5 +36,12 @@ namespace sunrise_launcher
             else
                 return sunrise_api;
         }
+    }
+
+    public interface IManifest
+    {
+        public Task<ManifestMetadata> GetMetadataAsync();
+
+        public Task<IList<ManifestFile>> GetFilesAsync();
     }
 }

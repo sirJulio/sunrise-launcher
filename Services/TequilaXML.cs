@@ -1,11 +1,12 @@
-﻿using System;
+﻿using SunriseLauncher.Models;
+using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Security.Cryptography;
 using System.Threading.Tasks;
 using System.Xml.Serialization;
 
-namespace sunrise_launcher
+namespace SunriseLauncher.Services
 {
     public class TequilaXML : IManifest
     {

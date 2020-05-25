@@ -1,9 +1,10 @@
-﻿using System;
+﻿using SunriseLauncher.Models;
+using System;
 using System.Security.Cryptography;
 
-namespace sunrise_launcher
+namespace SunriseLauncher.Services
 {
-    public static class Hashing
+    public class Hashing
     {
         public static HashAlgorithm GetHashAlgorithm(ManifestFile file)
         {

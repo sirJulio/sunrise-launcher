@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace sunrise_launcher
+namespace SunriseLauncher.Services
 {
     public static class Shuffler
     {

@@ -1,12 +1,11 @@
-﻿using System;
+﻿using SunriseLauncher.Models;
+using System;
 using System.Collections.Generic;
 using System.Net.Http;
-using System.Security.Cryptography;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
-namespace sunrise_launcher
+namespace SunriseLauncher.Services
 {
     public class SunriseJson : IManifest
     {

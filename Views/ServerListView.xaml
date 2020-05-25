@@ -1,0 +1,85 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:models="clr-namespace:SunriseLauncher.Models"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="SunriseLauncher.Views.ServerListView" Name="list">
+
+  <UserControl.Resources>
+    <models:StateConverterReady x:Key="StateConverterReady" />
+    <models:StateConverterNotUpdating x:Key="StateConverterNotUpdating" />
+  </UserControl.Resources>
+  
+  <Grid RowDefinitions="*,48" ColumnDefinitions="auto,*,auto,auto" Margin="4">
+
+    <!-- TOP -->
+    <Grid Margin="6" Grid.ColumnSpan="4">
+      <Border BorderBrush="#14466e" BorderThickness="4">
+        <Grid RowDefinitions="auto,*,auto">
+          <Grid.Background>
+            <SolidColorBrush Color="Black" Opacity=".66"/>
+          </Grid.Background>
+
+          <Image Source="/Assets/server_list.png" HorizontalAlignment="Left" Margin="10,-10,0,0" Stretch="None" />
+
+          <ScrollViewer Classes="Server" HorizontalScrollBarVisibility="Disabled" Grid.Row="1">
+            
+            <StackPanel>
+              <ListBox Items="{Binding Items}" Classes="Server" SelectedItem="{Binding SelectedItem}" >
+                <ListBox.ItemTemplate>
+                  <DataTemplate>
+                    <Grid Height="40" ColumnDefinitions="34,34,*" RowDefinitions="*" Margin="6,4,6,4" >
+                      <Button Classes="Image" Grid.Column="0" 
+                              IsVisible="{ Binding $parent[ListBoxItem].IsSelected }" 
+                              Command="{Binding #list.DataContext.OpenEditDialog}"
+                              IsEnabled="{Binding State, Converter={StaticResource StateConverterNotUpdating}}"
+                              CommandParameter="{Binding}" >
+                        <Image Stretch="None" Source="/Assets/configure_server.png"/>
+                      </Button>
+                      <Button Classes="Image" Grid.Column="1" 
+                              IsVisible="{ Binding $parent[ListBoxItem].IsSelected }" 
+                              Command="{Binding #list.DataContext.OpenRemoveDialog}"
+                              IsEnabled="{Binding State, Converter={StaticResource StateConverterNotUpdating}}"
+                              CommandParameter="{Binding}">
+                        <Image Stretch="None" Source="/Assets/remove_server.png"/>
+                      </Button>
+                      <TextBlock Foreground="White" Text="{Binding Launch}" FontFamily="Corbel,Arial" FontWeight="SemiBold" FontSize="20" VerticalAlignment="Center" Grid.Column="2" Margin="6"/>
+                    </Grid>
+                  </DataTemplate>
+                </ListBox.ItemTemplate>
+              </ListBox>
+              
+              <Button Classes="Image" HorizontalAlignment="Left" Command="{ Binding OpenAddDialog }" Margin="42,0,0,0" Grid.Row="2" >
+                <Image  Source="/Assets/add_server.png" Stretch="None" />
+              </Button>
+              
+            </StackPanel>
+          </ScrollViewer>
+  
+        </Grid>
+      </Border>
+    </Grid>
+
+    <!-- BOTTOM -->
+    <Button Classes="Image" Grid.Row="1" Grid.Column="0" Margin="4" Command="{Binding RefreshServers}" >
+      <Image Source="/Assets/refresh.png" Stretch="None" />
+    </Button>
+
+    <StackPanel DataContext="{Binding SelectedItem}" IsVisible="{Binding $self.DataContext, Converter={x:Static ObjectConverters.IsNotNull}}" Grid.Row="1" Grid.Column="1" Margin="4,2,4,2" VerticalAlignment="Center">
+      <TextBlock Foreground="White" HorizontalAlignment="Left" FontFamily="Corbel,Trebuchet MS,Arial" Text="{Binding ProgressDesc}" />
+      <ProgressBar Classes="Files" IsVisible="{Binding ProgressMaxFile}" Minimum="0" Maximum="{Binding ProgressMaxFile, Mode=OneWay}" Value="{Binding ProgressValueFile, Mode=OneWay}" Margin="1" />
+      <ProgressBar Classes="Files" IsVisible="{Binding ProgressDesc, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" IsIndeterminate="{Binding !ProgressMax, Mode=OneWay}" Minimum="0" Maximum="{Binding ProgressMax, Mode=OneWay}" Value="{Binding ProgressValue, Mode=OneWay}" Margin="1" />
+    </StackPanel>
+    
+    <Button Classes="Image" IsEnabled="{Binding SelectedItem.State, Converter={StaticResource StateConverterNotUpdating}}" Grid.Row="1" Grid.Column="2" Margin="4" Command="{Binding VerifyFiles}" >
+      <Image Source="/Assets/verify_files.png" Stretch="None" />
+    </Button>
+    
+    <Button Classes="Image" IsEnabled="{Binding SelectedItem.State, Converter={StaticResource StateConverterReady}}" Grid.Row="1" Grid.Column="3" Margin="4" Command="{Binding Launch}" >
+      <Image Source="/Assets/login.png" Stretch="None" />
+    </Button>
+
+  </Grid>
+  
+</UserControl>

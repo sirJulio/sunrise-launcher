@@ -1,16 +1,18 @@
-﻿using Qml.Net;
-using Qml.Net.Runtimes;
-using System;
+﻿using System;
 using System.IO;
-using System.Net;
+using Avalonia;
+using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Logging.Serilog;
+using Avalonia.ReactiveUI;
 
-namespace sunrise_launcher
+namespace SunriseLauncher
 {
-    public class Program
+    class Program
     {
-        public static QGuiApplication App;
-
-        static int Main(string[] args)
+        // Initialization code. Don't use any Avalonia, third-party APIs or any
+        // SynchronizationContext-reliant code before AppMain is called: things aren't initialized
+        // yet and stuff might break.
+        public static void Main(string[] args)
         {
             using (var fileout = new FileStream("./log.txt", FileMode.Create, FileAccess.Write))
             using (var writer = new StreamWriter(fileout))
@@ -18,31 +20,19 @@ namespace sunrise_launcher
                 Console.SetOut(writer);
                 writer.AutoFlush = true;
 
-                try
-                {
-                    RuntimeManager.DiscoverOrDownloadSuitableQtRuntime();
-                    using (var app = new QGuiApplication(args))
-                    {
-                        App = app;
-                        using (var engine = new QQmlApplicationEngine())
-                        {
-                            //register types
-                            Qml.Net.Qml.RegisterType<ServerList>("sunrise", 1, 1);
-                            Qml.Net.Qml.RegisterType<Server>("sunrise", 1, 1);
-
-                            //load qml files
-                            engine.Load("main.qml");
-
-                            return app.Exec();
-                        }
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine("exception in main: {0}", ex.Message);
-                    return 1;
-                }
+                BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
             }
         }
+
+
+       // => BuildAvaloniaApp()
+       //     .StartWithClassicDesktopLifetime(args);
+
+        // Avalonia configuration, don't remove; also used by visual designer.
+        public static AppBuilder BuildAvaloniaApp()
+            => AppBuilder.Configure<App>()
+                .UsePlatformDetect()
+                .LogToDebug()
+                .UseReactiveUI();
     }
 }

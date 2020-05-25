@@ -4,7 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text.Json.Serialization;
 
-namespace sunrise_launcher
+namespace SunriseLauncher.Models
 {
     public class Manifest : ManifestMetadata
     {
@@ -74,7 +74,7 @@ namespace sunrise_launcher
                 Console.WriteLine("illegal sequence in manifest file path: '..' in {0}", Path);
                 return false;
             }
-                
+
             if (Path.Contains("~"))
             {
                 Console.WriteLine("illegal sequence in manifest file path: '~' in {0}", Path);
