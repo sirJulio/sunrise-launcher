@@ -23,6 +23,23 @@ namespace SunriseLauncher.Models
         }
     }
 
+    public class StateConverterUpdating : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            if (value is null)
+                return false;
+
+            var state = (State)value;
+            return state == State.Updating;
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
     public class StateConverterNotUpdating : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
@@ -31,7 +48,7 @@ namespace SunriseLauncher.Models
                 return false;
 
             var state = (State)value;
-            return state != State.Updating && state != State.Unchecked;
+            return state != State.Updating;
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

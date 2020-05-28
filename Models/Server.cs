@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Text.Json.Serialization;
+using System.Threading;
 using ReactiveUI;
 
 namespace SunriseLauncher.Models
@@ -112,6 +113,9 @@ namespace SunriseLauncher.Models
                 NotifyPropertyChanged();
             }
         }
+
+        [JsonIgnore]
+        public CancellationTokenSource CancellationTokenSource { get; set; }
 
         public event PropertyChangedEventHandler PropertyChanged;
         private void NotifyPropertyChanged([CallerMemberName] String propertyName = "")

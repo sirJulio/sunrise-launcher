@@ -8,7 +8,7 @@
         x:Class="SunriseLauncher.Views.MainWindow"
         Icon="/Assets/sunrise.ico"
         Title="Sunrise Launcher v0.0.2"
-        Width="640" Height="360" MaxHeight="800" Background="Black">
+        Width="640" Height="360" MaxHeight="800">
   <Window.Background>
     <ImageBrush Source="/Assets/background_top.png" AlignmentY="Top" DestinationRect="0,0,611,800" TileMode="Tile" Stretch="None" SourceRect="0,0,611,175"/>
   </Window.Background>

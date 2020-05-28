@@ -85,7 +85,7 @@ namespace SunriseLauncher.ViewModels
                 SelectedItem = server;
 
                 var updateResult = await fileUpdater.UpdateAsync(server, true);
-                if (!updateResult.Success)
+                if (!updateResult.Success && !string.IsNullOrEmpty(updateResult.Message))
                 {
                     var msgbox = new MessageBoxView(updateResult.Message, "See log.txt for details.", false);
                     await msgbox.ShowDialog(Window);
@@ -122,7 +122,7 @@ namespace SunriseLauncher.ViewModels
                 server.Metadata = vm.Metadata;
 
                 var updateResult = await fileUpdater.UpdateAsync(server, false);
-                if (!updateResult.Success)
+                if (!updateResult.Success && !string.IsNullOrEmpty(updateResult.Message))
                 {
                     var msgbox = new MessageBoxView(updateResult.Message, "See log.txt for details.", false);
                     await msgbox.ShowDialog(Window);
@@ -141,6 +141,14 @@ namespace SunriseLauncher.ViewModels
             }
         }
 
+        public async void CancelUpdate()
+        {
+            if (SelectedItem == null)
+                return;
+
+            SelectedItem.CancellationTokenSource.Cancel();
+        }
+
         public async void RefreshServers()
         {
             foreach (var server in Items.Where(x => x.State != State.Updating))
@@ -152,7 +160,7 @@ namespace SunriseLauncher.ViewModels
             foreach (var server in Items.Where(x => x.State == State.Unchecked))
             {
                 var updateResult = await fileUpdater.UpdateAsync(server, false);
-                if (!updateResult.Success)
+                if (!updateResult.Success && !string.IsNullOrEmpty(updateResult.Message))
                 {
                     var msgbox = new MessageBoxView(updateResult.Message, "See log.txt for details.", false);
                     await msgbox.ShowDialog(Window);
@@ -166,7 +174,7 @@ namespace SunriseLauncher.ViewModels
                 return;
 
             var updateResult = await fileUpdater.UpdateAsync(SelectedItem, true);
-            if (!updateResult.Success)
+            if (!updateResult.Success && !string.IsNullOrEmpty(updateResult.Message))
             {
                 var msgbox = new MessageBoxView(updateResult.Message, "See log.txt for details.", false);
                 await msgbox.ShowDialog(Window);

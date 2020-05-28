@@ -27,6 +27,7 @@ namespace SunriseLauncher.Services
                 server.ProgressDesc = "retrieving manfiest";
                 server.ProgressValue = 0;
                 server.ProgressMax = 0;
+                server.CancellationTokenSource = new CancellationTokenSource();
 
                 var manifest = MainfestFactory.Get(server.ManifestURL);
                 if (manifest == null)
@@ -93,6 +94,8 @@ namespace SunriseLauncher.Services
             await semaphore.WaitAsync();
             try
             {
+                var token = server.CancellationTokenSource.Token;
+
                 var files = await manifest.GetFilesAsync();
                 if (files == null)
                 {
@@ -103,6 +106,12 @@ namespace SunriseLauncher.Services
                 server.ProgressMax = files.Count;
                 foreach (var file in files)
                 {
+                    if (token.IsCancellationRequested)
+                    {
+                        server.State = State.Error;
+                        return new UpdateResult(false, null);
+                    }
+
                     server.ProgressValue++;
 
                     if (!file.Verify())
@@ -111,10 +120,11 @@ namespace SunriseLauncher.Services
                         return new UpdateResult(false, "Manifest file failed inspection " + file.Path);
                     }
 
-                    if (!await Updatefile(file, server))
+                    var result = await Updatefile(file, server);
+                    if (!result.Success)
                     {
                         server.State = State.Error;
-                        return new UpdateResult(false, "Could not update file " + file.Path);
+                        return result;
                     }
                 }
             }
@@ -134,15 +144,16 @@ namespace SunriseLauncher.Services
             return new UpdateResult(true, null);
         }
 
-        private async Task<bool> Updatefile(ManifestFile file, Server server)
+        private async Task<UpdateResult> Updatefile(ManifestFile file, Server server)
         {
             if (await Checkfile(file, server))
-                return true;
+                return new UpdateResult(true, null);
 
             var path = Path.Combine(server.InstallPath, file.Path);
             var tempfile = path + "~";
-            Console.WriteLine("downloading {0}", path);
+            var token = server.CancellationTokenSource.Token;
 
+            Console.WriteLine("downloading {0}", path);
             Shuffler.Shuffle(file.Sources);
             foreach (var source in file.Sources)
             {
@@ -154,7 +165,8 @@ namespace SunriseLauncher.Services
 
                     using (var hash = Hashing.GetHashAlgorithm(file))
                     {
-                        if (hash == null) return false;
+                        if (hash == null)
+                            return new UpdateResult(false, "hash algorithm missing for " + file.Path);
 
                         var dirname = Path.GetDirectoryName(path);
                         if (!string.IsNullOrWhiteSpace(dirname)) Directory.CreateDirectory(dirname);
@@ -168,7 +180,7 @@ namespace SunriseLauncher.Services
                             using (var hashstream = new CryptoStream(filestream, hash, CryptoStreamMode.Write))
                             using (var reader = await response.Content.ReadAsStreamAsync())
                             {
-                                size = await CopyToProgressFileAsync(reader, hashstream, 81920, server, CancellationToken.None);
+                                size = await CopyToProgressFileAsync(reader, hashstream, 81920, server, token);
                                 hashstream.FlushFinalBlock();
                                 checksum = hash.Hash;
                             }
@@ -176,7 +188,7 @@ namespace SunriseLauncher.Services
                             if (size == file.Size && Hashing.VerifyChecksum(checksum, file))
                             {
                                 File.Move(tempfile, path, true);
-                                return true;
+                                return new UpdateResult(true, null);
                             }
                             else
                             {
@@ -189,6 +201,16 @@ namespace SunriseLauncher.Services
                             Console.WriteLine("cannot get file from source {0}", source.URL);
                         }
                     }
+                }
+                catch (OperationCanceledException ex)
+                {
+                    if (ex.CancellationToken == token)
+                    {
+                        Console.WriteLine("update stopped due to cancellation request");
+                        return new UpdateResult(false, "");
+                    }
+
+                    Console.WriteLine("OperationCanceledException while downloading source {0}: {1}", source.URL, ex.Message);
                 }
                 catch (Exception ex)
                 {
@@ -205,7 +227,7 @@ namespace SunriseLauncher.Services
                     server.ProgressMaxFile = 0;
                 }
             }
-            return false;
+            return new UpdateResult(false, "Could not update file " + file.Path);
         }
 
         private async Task<bool> Checkfile(ManifestFile file, Server server)
