@@ -35,14 +35,14 @@
                               IsVisible="{ Binding $parent[ListBoxItem].IsSelected }" 
                               Command="{Binding #list.DataContext.OpenEditDialog}"
                               IsEnabled="{Binding State, Converter={StaticResource StateConverterNotUpdating}}"
-                              CommandParameter="{Binding}" >
+                              CommandParameter="{Binding}" ToolTip.Tip="Configure" >
                         <Image Stretch="None" Source="/Assets/configure_server.png"/>
                       </Button>
                       <Button Classes="Image" Grid.Column="1" 
                               IsVisible="{ Binding $parent[ListBoxItem].IsSelected }" 
                               Command="{Binding #list.DataContext.OpenRemoveDialog}"
                               IsEnabled="{Binding State, Converter={StaticResource StateConverterNotUpdating}}"
-                              CommandParameter="{Binding}">
+                              CommandParameter="{Binding}" ToolTip.Tip="Remove" >
                         <Image Stretch="None" Source="/Assets/remove_server.png"/>
                       </Button>
                       <TextBlock Foreground="White" Text="{Binding Launch}" FontFamily="Corbel,Arial" FontSize="20" VerticalAlignment="Center" Grid.Column="2" Margin="6"/>
@@ -52,7 +52,7 @@
                 </ListBox.ItemTemplate>
               </ListBox>
               
-              <Button Classes="Image" HorizontalAlignment="Left" Command="{ Binding OpenAddDialog }" Margin="42,0,0,0" Grid.Row="2" >
+              <Button Classes="Image" HorizontalAlignment="Left" Command="{ Binding OpenAddDialog }" Margin="42,0,0,0" Grid.Row="2" ToolTip.Tip="Add" >
                 <Image  Source="/Assets/add_server.png" Stretch="None" />
               </Button>
               
@@ -69,12 +69,12 @@
     </Button>
 
     <Grid ColumnDefinitions="*,34" Grid.Row="1" Grid.Column="1" IsVisible="{Binding SelectedItem, Converter={x:Static ObjectConverters.IsNotNull}}" Margin="2" >
-      <StackPanel DataContext="{Binding SelectedItem}"  VerticalAlignment="Center">
+      <StackPanel DataContext="{Binding SelectedItem}"  VerticalAlignment="Center" Margin="2">
         <TextBlock Foreground="White" HorizontalAlignment="Left" FontFamily="Corbel,Trebuchet MS,Arial" Text="{Binding ProgressDesc}" />
         <ProgressBar Classes="Files" IsVisible="{Binding ProgressMaxFile}" Minimum="0" Maximum="{Binding ProgressMaxFile, Mode=OneWay}" Value="{Binding ProgressValueFile, Mode=OneWay}" Margin="1" />
         <ProgressBar Classes="Files" IsVisible="{Binding ProgressDesc, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" IsIndeterminate="{Binding !ProgressMax, Mode=OneWay}" Minimum="0" Maximum="{Binding ProgressMax, Mode=OneWay}" Value="{Binding ProgressValue, Mode=OneWay}" Margin="1" />
       </StackPanel>
-      <Button Classes="Image" Grid.Column="1" Command="{Binding CancelUpdate}" IsVisible="{Binding SelectedItem.State, Converter={StaticResource StateConverterUpdating}}" >
+      <Button Classes="Image" Grid.Column="1" Command="{Binding CancelUpdate}" IsVisible="{Binding SelectedItem.State, Converter={StaticResource StateConverterUpdating}}" Margin="1" ToolTip.Tip="Cancel" >
         <Image Stretch="None" Source="/Assets/cancel.png"/>
       </Button>
     </Grid>
