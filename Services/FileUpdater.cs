@@ -77,6 +77,8 @@ namespace SunriseLauncher.Services
             {
                 server.State = State.Error;
                 Console.WriteLine("exception in UpdateAsync: {0}", ex.Message);
+                if (ex.StackTrace != null)
+                    Console.WriteLine(ex.StackTrace);
                 return new UpdateResult(false, "UpdateAsync Exception");
             }
             finally
