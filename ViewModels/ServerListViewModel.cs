@@ -181,10 +181,19 @@ namespace SunriseLauncher.ViewModels
             }
         }
 
-        public void Launch()
+        public async void Launch()
         {
             if (SelectedItem == null || SelectedItem.State != State.Ready)
                 return;
+
+            //check manifest has updated since app has opened
+            //even if this step fails, launch anyway in case manifest server is down
+            var updateResult = await fileUpdater.UpdateAsync(SelectedItem, false);
+            if (!updateResult.Success && !string.IsNullOrEmpty(updateResult.Message))
+            {
+                var msgbox = new MessageBoxView(updateResult.Message, "See log.txt for details.", false);
+                await msgbox.ShowDialog(Window);
+            }
 
             var launch = SelectedItem.Metadata.LaunchOptions.FirstOrDefault(x => x.Name == SelectedItem.Launch);
             if (launch == null)
