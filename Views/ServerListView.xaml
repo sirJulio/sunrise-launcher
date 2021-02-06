@@ -69,10 +69,10 @@
     </Button>
 
     <Grid ColumnDefinitions="*,34" Grid.Row="1" Grid.Column="1" IsVisible="{Binding SelectedItem, Converter={x:Static ObjectConverters.IsNotNull}}" Margin="2" >
-      <StackPanel DataContext="{Binding SelectedItem}"  VerticalAlignment="Center" Margin="2">
-        <TextBlock Foreground="White" HorizontalAlignment="Left" FontFamily="Corbel,Trebuchet MS,Arial" Text="{Binding ProgressDesc}" />
-        <ProgressBar Classes="Files" IsVisible="{Binding ProgressMaxFile}" Minimum="0" Maximum="{Binding ProgressMaxFile, Mode=OneWay}" Value="{Binding ProgressValueFile, Mode=OneWay}" Margin="1" />
-        <ProgressBar Classes="Files" IsVisible="{Binding ProgressDesc, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" IsIndeterminate="{Binding !ProgressMax, Mode=OneWay}" Minimum="0" Maximum="{Binding ProgressMax, Mode=OneWay}" Value="{Binding ProgressValue, Mode=OneWay}" Margin="1" />
+      <StackPanel DataContext="{Binding SelectedItem.ProgressState}"  VerticalAlignment="Center" Margin="2">
+        <TextBlock Foreground="White" HorizontalAlignment="Left" FontFamily="Corbel,Trebuchet MS,Arial" Text="{Binding Desc}" />
+        <ProgressBar Classes="Files" IsVisible="{Binding FileProgressMax}" Minimum="0" Maximum="{Binding FileProgressMax, Mode=OneWay}" Value="{Binding FileProgress, Mode=OneWay}" Margin="1" />
+        <ProgressBar Classes="Files" IsVisible="{Binding Desc, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" IsIndeterminate="{Binding !ProgressMax, Mode=OneWay}" Minimum="0" Maximum="{Binding ProgressMax, Mode=OneWay}" Value="{Binding Progress, Mode=OneWay}" Margin="1" />
       </StackPanel>
       <Button Classes="Image" Grid.Column="1" Command="{Binding CancelUpdate}" IsVisible="{Binding SelectedItem.State, Converter={StaticResource StateConverterUpdating}}" Margin="1" ToolTip.Tip="Cancel" >
         <Image Stretch="None" Source="/Assets/cancel.png"/>

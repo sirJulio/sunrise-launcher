@@ -24,9 +24,7 @@ namespace SunriseLauncher.Services
             try
             {
                 server.State = State.Updating;
-                server.ProgressDesc = "retrieving manfiest";
-                server.ProgressValue = 0;
-                server.ProgressMax = 0;
+                server.ProgressState.Desc = "retrieving manfiest";
                 server.CancellationTokenSource = new CancellationTokenSource();
 
                 var manifest = MainfestFactory.Get(server.ManifestURL);
@@ -83,16 +81,16 @@ namespace SunriseLauncher.Services
             }
             finally
             {
-                server.ProgressDesc = null;
-                server.ProgressValue = 0;
-                server.ProgressMax = 0;
+                server.ProgressState.Desc = null;
+                server.ProgressState.Progress = 0;
+                server.ProgressState.ProgressMax = 0;
             }
             return new UpdateResult(true, null);
         }
 
         private async Task<UpdateResult> Updatefiles(Server server, IManifest manifest, string path)
         {
-            server.ProgressDesc = "waiting in queue ...";
+            server.ProgressState.Desc = "waiting in queue ...";
             await semaphore.WaitAsync();
             try
             {
@@ -105,30 +103,32 @@ namespace SunriseLauncher.Services
                     return new UpdateResult(false, "Could not retrieve files from manifest.");
                 }
 
-                server.ProgressMax = files.Count;
-                foreach (var file in files)
+                server.ProgressState.SetFiles(files.Count);
+                var throttle = new SemaphoreSlim(4);
+                var tasks = files.Select(async (file,i) =>
                 {
-                    if (token.IsCancellationRequested)
+                    try
                     {
-                        server.State = State.Error;
-                        return new UpdateResult(false, null);
+                        await throttle.WaitAsync();
+                        if (token.IsCancellationRequested) return;
+
+                        if (!file.Verify())
+                        {
+                            server.State = State.Error;
+                            //return new UpdateResult(false, "Manifest file failed inspection " + file.Path);
+                        }
+
+                        var result = await Updatefile(file, server, i);
+
+                    }
+                    finally
+                    {
+                        server.ProgressState.Update(i, true);
+                        throttle.Release();
                     }
 
-                    server.ProgressValue++;
-
-                    if (!file.Verify())
-                    {
-                        server.State = State.Error;
-                        return new UpdateResult(false, "Manifest file failed inspection " + file.Path);
-                    }
-
-                    var result = await Updatefile(file, server);
-                    if (!result.Success)
-                    {
-                        server.State = State.Error;
-                        return result;
-                    }
-                }
+                });
+                await Task.WhenAll(tasks);
             }
             catch (Exception ex)
             {
@@ -139,16 +139,16 @@ namespace SunriseLauncher.Services
             finally
             {
                 semaphore.Release();
-                server.ProgressDesc = null;
+                server.ProgressState.Desc = null;
             }
 
             server.State = State.Ready;
             return new UpdateResult(true, null);
         }
 
-        private async Task<UpdateResult> Updatefile(ManifestFile file, Server server)
+        private async Task<UpdateResult> Updatefile(ManifestFile file, Server server, int index)
         {
-            if (await Checkfile(file, server))
+            if (await Checkfile(file, server, index))
                 return new UpdateResult(true, null);
 
             var path = Path.Combine(server.InstallPath, file.Path);
@@ -162,8 +162,10 @@ namespace SunriseLauncher.Services
                 Console.WriteLine("downloading from source '{0}'.", source.URL);
                 try
                 {
-                    server.ProgressDesc = "downloading " + file.Path;
-                    server.ProgressMaxFile = file.Size;
+                    var state = new FileProgressState();
+                    state.Desc = "downloading " + file.Path;
+                    state.Max = file.Size;
+                    server.ProgressState.Update(index, state);
 
                     using (var hash = Hashing.GetHashAlgorithm(file))
                     {
@@ -182,7 +184,7 @@ namespace SunriseLauncher.Services
                             using (var hashstream = new CryptoStream(filestream, hash, CryptoStreamMode.Write))
                             using (var reader = await response.Content.ReadAsStreamAsync())
                             {
-                                size = await CopyToProgressFileAsync(reader, hashstream, 81920, server, token);
+                                size = await CopyToProgressFileAsync(reader, hashstream, 81920, server, index, token);
                                 hashstream.FlushFinalBlock();
                                 checksum = hash.Hash;
                             }
@@ -224,15 +226,15 @@ namespace SunriseLauncher.Services
                 }
                 finally
                 {
-                    server.ProgressDesc = null;
-                    server.ProgressValueFile = 0;
-                    server.ProgressMaxFile = 0;
+                    //server.ProgressDesc = null;
+                    //server.ProgressValueFile = 0;
+                    //server.ProgressMaxFile = 0;
                 }
             }
             return new UpdateResult(false, "Could not update file " + file.Path);
         }
 
-        private async Task<bool> Checkfile(ManifestFile file, Server server)
+        private async Task<bool> Checkfile(ManifestFile file, Server server, int index)
         {
             var path = Path.Combine(server.InstallPath, file.Path);
             Console.WriteLine("checking {0}", path);
@@ -255,13 +257,15 @@ namespace SunriseLauncher.Services
                 long size = 0;
                 try
                 {
-                    server.ProgressDesc = "verifying " + file.Path;
-                    server.ProgressMaxFile = file.Size;
+                    var state = new FileProgressState();
+                    state.Desc = "verifying " + file.Path;
+                    state.Max = file.Size;
+                    server.ProgressState.Update(index, state);
 
                     using (FileStream filestream = new FileStream(path, FileMode.Open))
                     using (var hashstream = new CryptoStream(Stream.Null, hash, CryptoStreamMode.Write))
                     {
-                        size = await CopyToProgressFileAsync(filestream, hashstream, 81920, server, CancellationToken.None);
+                        size = await CopyToProgressFileAsync(filestream, hashstream, 81920, server, index, CancellationToken.None);
                         hashstream.FlushFinalBlock();
                         checksum = hash.Hash;
                     }
@@ -276,20 +280,18 @@ namespace SunriseLauncher.Services
             }
         }
 
-        private async Task<long> CopyToProgressFileAsync(Stream fromStream, Stream destination, int bufferSize, Server server, CancellationToken cancellationToken)
+        private async Task<long> CopyToProgressFileAsync(Stream fromStream, Stream destination, int bufferSize, Server server, int index, CancellationToken cancellationToken)
         {
-            server.ProgressValueFile = 0;
+            //server.ProgressValueFile = 0;
             var buffer = new byte[bufferSize];
             long size = 0;
             int count;
             while ((count = await fromStream.ReadAsync(buffer, 0, buffer.Length, cancellationToken)) != 0)
             {
                 size += count;
-                server.ProgressValueFile = size;
+                server.ProgressState.Update(index, size);
                 await destination.WriteAsync(buffer, 0, count, cancellationToken);
             }
-            server.ProgressValueFile = 0;
-            server.ProgressMaxFile = 0;
             return size;
         }
     }

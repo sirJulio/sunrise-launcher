@@ -54,62 +54,14 @@ namespace SunriseLauncher.Models
             }
         }
 
-        private string progressDesc;
+        private ProgressState progressState;
         [JsonIgnore]
-        public string ProgressDesc
+        public ProgressState ProgressState
         {
-            get => progressDesc;
+            get => progressState;
             set
             {
-                progressDesc = value;
-                NotifyPropertyChanged();
-            }
-        }
-
-        private int progressValue;
-        [JsonIgnore]
-        public int ProgressValue
-        {
-            get => progressValue;
-            set
-            {
-                progressValue = value;
-                NotifyPropertyChanged();
-            }
-        }
-
-        private int progressMax;
-        [JsonIgnore]
-        public int ProgressMax
-        {
-            get => progressMax;
-            set
-            {
-                progressMax = value;
-                NotifyPropertyChanged();
-            }
-        }
-
-        private long progressValueFile;
-        [JsonIgnore]
-        public long ProgressValueFile
-        {
-            get => progressValueFile;
-            set
-            {
-                progressValueFile = value;
-                NotifyPropertyChanged();
-            }
-        }
-
-        private long progressMaxFile;
-        [JsonIgnore]
-        public long ProgressMaxFile
-        {
-            get => progressMaxFile;
-            set
-            {
-                progressMaxFile = value;
+                progressState = value;
                 NotifyPropertyChanged();
             }
         }
@@ -121,6 +73,12 @@ namespace SunriseLauncher.Models
         private void NotifyPropertyChanged([CallerMemberName] String propertyName = "")
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+
+        public Server()
+        {
+            ProgressState = new ProgressState();
+            ProgressState.Desc = "waky";
         }
     }
 
