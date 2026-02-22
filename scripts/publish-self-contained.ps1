@@ -20,6 +20,7 @@ if (-not (Test-Path $outDir)) { New-Item -ItemType Directory -Path $outDir -Forc
 
 # Run dotnet publish
 $args = @(
+    "publish",
     $project,
     "-c", $Configuration,
     "-r", $RID,
